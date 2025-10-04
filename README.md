@@ -1,5 +1,5 @@
-# Welcome to GitHub Desktop!
+# this is my django of ecommerce website 
 
-This is your README. READMEs are where you can communicate what your project is and how to use it.
+look a like amazone and flipkart 
 
-Write your name on line 6, save it, and then head back to GitHub Desktop.
+here i add some new Unique things
