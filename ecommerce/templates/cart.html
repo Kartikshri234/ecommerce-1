@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - ShopEase{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="mb-4 text-center">🛒 Your Shopping Cart</h1>
+
+    {% if cart_items %}
+        <div class="table-responsive shadow-sm rounded bg-white p-3">
+            <table class="table table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>
+                            <strong>{{ item.product.name }}</strong>
+                            {% if item.product.category %}
+                                <br><small class="text-muted">{{ item.product.category.name }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="fw-semibold">₹{{ item.product.price }}</td>
+                        <td>
+                            <form method="post" action="{% url 'update_cart' item.id %}">
+                                {% csrf_token %}
+                                <div class="btn-group" role="group">
+                                    <button type="submit" name="action" value="decrease" class="btn btn-sm btn-outline-secondary">-</button>
+                                    <span class="px-2">{{ item.quantity }}</span>
+                                    <button type="submit" name="action" value="increase" class="btn btn-sm btn-outline-secondary">+</button>
+                                </div>
+                            </form>
+                        </td>
+                        <td class="fw-bold text-success">₹{{ item.get_total }}</td>
+                        <td>
+                            <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Remove this item?')">Remove</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-end mt-3">
+            <h3 class="fw-bold">Total: <span class="text-success">₹{{ total }}</span></h3>
+            <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg mt-2">Proceed to Checkout</a>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            <h4>Your cart is empty 🛍️</h4>
+            <p>Add some products to get started.</p>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-primary">Continue Shopping</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

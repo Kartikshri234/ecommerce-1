@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }} - ShopEase{% endblock %}
+{% block content %}
+<section class="container my-5">
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="pd-gallery bg-surface p-3 rounded shadow-sm">
+        {% if product.image %}
+          <img loading="lazy" class="w-100 rounded" src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% else %}
+          <img loading="lazy" class="w-100 rounded" src="{% static 'images/placeholder.png' %}" alt="{{ product.name }}">
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="pd-info">
+        <h1 class="mb-2">{{ product.name }}</h1>
+        {% if product.rating %}<div class="mb-2 text-warning"><i class="fa-solid fa-star"></i> {{ product.rating|floatformat:1 }} / 5</div>{% endif %}
+        <p class="price">Price: ₹{{ product.price }}</p>
+        <p class="text-muted">{{ product.description }}</p>
+        <form method="post" action="{% url 'add_to_cart' product.id %}" data-add-to-cart-form data-name="{{ product.name|escapejs }}" class="d-flex gap-3 mt-3">
+          {% csrf_token %}
+          <input type="number" name="quantity" min="1" value="1" class="form-control" style="max-width:120px">
+          <button class="btn btn-primary"><i class="fa-solid fa-cart-plus me-1"></i> Add to cart</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Products - ShopEase{% endblock %}
+{% block content %}
+{% csrf_token %}  <!-- Add this line -->
+<section class="container my-4">
+  <div class="d-flex justify-content-between align-items-end mb-3">
+    <h2 class="m-0">Products</h2>
+    <form class="d-flex gap-2" method="get">
+      <select name="category" class="form-select form-select-sm" style="max-width: 200px;">
+        <option value="">All categories</option>
+        {% for c in categories %}
+          <option value="{{ c.id }}" {% if request.GET.category|default:'' == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="sort" class="form-select form-select-sm" style="max-width: 200px;">
+        <option value="">Sort by</option>
+        <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+        <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+        <option value="rating_desc" {% if request.GET.sort == 'rating_desc' %}selected{% endif %}>Rating</option>
+      </select>
+      <button class="btn btn-outline-secondary btn-sm">Apply</button>
+    </form>
+  </div>
+
+  <div class="product-grid">
+    {% for p in products %}
+    <a class="product-card" href="{% url 'product_detail' p.id %}">
+      <div class="product-thumb">
+        {% if p.image %}<img loading="lazy" src="{{ p.image.url }}" alt="{{ p.name }}">{% else %}
+        <img loading="lazy" src="{% static 'images/placeholder.png' %}" alt="{{ p.name }}">
+        {% endif %}
+      </div>
+      <div class="product-info">
+        <h3 class="product-title">{{ p.name }}</h3>
+        <div class="product-meta">
+          <span class="price">₹{{ p.price }}</span>
+          {% if p.rating %}<span class="rating"><i class="fa-solid fa-star"></i> {{ p.rating|floatformat:1 }}</span>{% endif %}
+        </div>
+      
+    <button
+      class="btn btn-sm btn-primary w-100 mt-2 add-to-cart-btn"
+      data-add-to-cart
+      data-url="{% url 'add_to_cart' p.id %}"
+      data-name="{{ p.name|escapejs }}"
+    ><i class="fa-solid fa-cart-plus me-1"></i>Add to cart</button>
+  </div>
+</a>
+    {% empty %}
+      <div class="text-muted">No products found.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

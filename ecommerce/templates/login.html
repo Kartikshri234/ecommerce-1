@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Login - ShopEase{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <h1 class="auth-title">Welcome back</h1>
+
+    {% if messages %}
+      <div class="alerts">
+        {% for m in messages %}
+          <div class="alert {{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-row">
+        <label for="id_username">Username</label>
+        <input id="id_username" name="username" type="text" class="form-control" required autocomplete="username">
+      </div>
+      <div class="form-row">
+        <label for="id_password">Password</label>
+        <div class="password-wrap">
+          <input id="id_password" name="password" type="password" class="form-control" required autocomplete="current-password">
+          <button type="button" class="show-toggle" aria-label="Show password">👁</button>
+        </div>
+      </div>
+      <div class="form-row between">
+        <label class="checkbox"><input type="checkbox" name="remember"> Remember me</label>
+        <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+
+    <p class="alt-action">Don’t have an account?
+      <a class="link" href="{% url 'register' %}">Register</a>
+    </p>
+  </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.querySelector('.show-toggle');
+  const pwd = document.getElementById('id_password');
+  if (btn && pwd) {
+    btn.addEventListener('click', function () {
+      const show = pwd.type === 'password';
+      pwd.type = show ? 'text' : 'password';
+      this.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+      this.classList.toggle('active', show);
+    });
+  }
+});
+</script>
+{% endblock %}

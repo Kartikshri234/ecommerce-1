@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - ShopEase{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-center mb-4">💳 Checkout</h1>
+
+    {% if cart_items %}
+    <div class="row g-4">
+        <!-- Order Summary -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Order Summary</div>
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between border-bottom py-2">
+                        <div>
+                            <strong>{{ item.product.name }}</strong>
+                            <br><small class="text-muted">Qty: {{ item.quantity }}</small>
+                        </div>
+                        <div class="fw-bold">₹{{ item.get_total }}</div>
+                    </div>
+                    {% endfor %}
+                    <div class="d-flex justify-content-between mt-3 fw-bold fs-5">
+                        <span>Total:</span>
+                        <span class="text-success">₹{{ total }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Form -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">Delivery & Payment</div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h5>Payment Method</h5>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="payment_method" value="cod" checked>
+                            <label class="form-check-label">Cash on Delivery</label>
+                        </div>
+                        <div class="form-check">
+                            <input type="radio" class="form-check-input" name="payment_method" value="card">
+                            <label class="form-check-label">Credit/Debit Card</label>
+                        </div>
+                        
+                        <hr>
+                        <h5>Delivery Address</h5>
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" name="full_name" required value="{{ user.get_full_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="address_line1" required rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" name="city" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">Place Order</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        <h4>Your cart is empty 🛍️</h4>
+        <a href="{% url 'product_list' %}" class="btn btn-outline-primary">Continue Shopping</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
