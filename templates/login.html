@@ -4,6 +4,7 @@
 <div class="auth-page">
   <div class="auth-card">
     <h1 class="auth-title">Welcome back</h1>
+    <p class="auth-subtitle">Sign in to continue shopping and manage your cart.</p>
 
     {% if messages %}
       <div class="alerts">
@@ -15,18 +16,18 @@
 
     <form method="post" novalidate>
       {% csrf_token %}
-      <div class="form-row">
+      <div class="auth-field">
         <label for="id_username">Username</label>
         <input id="id_username" name="username" type="text" class="form-control" required autocomplete="username">
       </div>
-      <div class="form-row">
+      <div class="auth-field">
         <label for="id_password">Password</label>
         <div class="password-wrap">
           <input id="id_password" name="password" type="password" class="form-control" required autocomplete="current-password">
           <button type="button" class="show-toggle" aria-label="Show password">👁</button>
         </div>
       </div>
-      <div class="form-row between">
+      <div class="auth-field between">
         <label class="checkbox"><input type="checkbox" name="remember"> Remember me</label>
         <a class="link" href="{% url 'password_reset' %}">Forgot password?</a>
       </div>
