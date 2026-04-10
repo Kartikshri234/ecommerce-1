@@ -4,6 +4,16 @@ from pathlib import Path
 # Base directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Support both current project layout and accidental nested duplicate layout.
+POSSIBLE_TEMPLATE_DIRS = [
+    BASE_DIR / 'templates',
+    BASE_DIR.parent / 'templates',
+]
+POSSIBLE_STATIC_DIRS = [
+    BASE_DIR / 'static',
+    BASE_DIR.parent / 'static',
+]
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'your-secret-key-here'
 
@@ -39,7 +49,7 @@ ROOT_URLCONF = 'ecommerce.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # ✅ use ecommerce/templates
+        'DIRS': [str(path) for path in POSSIBLE_TEMPLATE_DIRS if path.exists()],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -92,9 +102,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),   # ✅ use ecommerce/static
-]
+STATICFILES_DIRS = [str(path) for path in POSSIBLE_STATIC_DIRS if path.exists()]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')   # for collectstatic
 
