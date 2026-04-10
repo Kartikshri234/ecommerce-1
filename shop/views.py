@@ -133,7 +133,13 @@ def add_to_cart(request, product_id):
 @login_required
 def cart_view(request):
     cart = Cart.objects.filter(user=request.user).first()
-    return render(request, 'cart.html', {'cart': cart})
+    cart_items = cart.items.select_related('product').all() if cart else []
+    total = sum(item.get_total() for item in cart_items)
+    return render(request, 'cart.html', {
+        'cart': cart,
+        'cart_items': cart_items,
+        'total': total,
+    })
 
 
 @login_required
@@ -166,6 +172,7 @@ def remove_from_cart(request, item_id):
 # Checkout & Orders
 # ------------------------
 
+@login_required
 def checkout(request):
     cart, _ = Cart.objects.get_or_create(user=request.user)
     cart_items = CartItem.objects.filter(cart=cart)

@@ -14,7 +14,39 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    
+    <header class="site-header border-bottom bg-white sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light">
+            <div class="container">
+                <a class="navbar-brand fw-bold" href="{% url 'home' %}">ShopEase</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'product_list' %}">Products</a></li>
+                    </ul>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <a id="miniCartBtn" class="btn btn-outline-primary position-relative" href="{% url 'cart' %}">
+                            <i class="fa-solid fa-cart-shopping me-1"></i>Cart
+                            <span id="cart-count" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ cart_count|default:0 }}</span>
+                        </a>
+
+                        {% if user.is_authenticated %}
+                            <span class="text-muted small">Hi, {{ user.username }}</span>
+                            <a class="btn btn-outline-secondary" href="{% url 'logout' %}">Logout</a>
+                        {% else %}
+                            <a class="btn btn-outline-secondary" href="{% url 'login' %}">Login</a>
+                            <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
     <main>
         {% if messages %}
         <div class="container mt-3">
@@ -36,53 +68,5 @@
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}
-
-    <script>
-    // Add to cart functionality
-    document.querySelectorAll('[data-add-to-cart]').forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const url = button.dataset.url;
-            const productName = button.dataset.name;
-            
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                    },
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Update cart count
-                    const cartCount = document.getElementById('cart-count');
-                    if (cartCount) {
-                        cartCount.textContent = data.cart_count;
-                    }
-                    
-                    // Show success message
-                    button.innerHTML = '<i class="fa-solid fa-check me-1"></i>Added!';
-                    button.classList.remove('btn-primary');
-                    button.classList.add('btn-success');
-                    
-                    setTimeout(() => {
-                        button.innerHTML = '<i class="fa-solid fa-cart-plus me-1"></i>Add to cart';
-                        button.classList.remove('btn-success');
-                        button.classList.add('btn-primary');
-                    }, 2000);
-                } else {
-                    throw new Error(data.message || 'Failed to add to cart');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert(error.message || 'Failed to add to cart');
-            }
-        });
-    });
-    </script>
 </body>
 </html>
