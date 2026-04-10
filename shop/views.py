@@ -61,7 +61,8 @@ def register_view(request):
             user = form.save()
             login(request, user)
             messages.success(request, "Registration successful! 🎉")
-            return redirect("home")
+            return redirect(request.GET.get("next") or "home")
+        messages.error(request, "Please fix the errors below and try again.")
     else:
         form = RegisterForm()
     return render(request, "register.html", {"form": form})
@@ -75,7 +76,7 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome back {user.username}!")
-            return redirect("home")
+            return redirect(request.GET.get("next") or "home")
         else:
             messages.error(request, "Invalid username or password ❌")
     return render(request, "login.html")
