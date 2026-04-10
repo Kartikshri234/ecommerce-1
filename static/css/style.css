@@ -180,6 +180,11 @@ h6 { font-size: 1rem; }
   position: relative;
 }
 
+.header-search {
+  width: 100%;
+  max-width: 420px;
+}
+
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -207,6 +212,12 @@ h6 { font-size: 1rem; }
   padding: 0.5rem;
   width: 40px;
   height: 40px;
+}
+
+@media (max-width: 991.98px) {
+  .header-search {
+    max-width: none;
+  }
 }
 
 /* Header Actions */

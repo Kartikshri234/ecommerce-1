@@ -28,6 +28,20 @@
                         <li class="nav-item"><a class="nav-link" href="{% url 'product_list' %}">Products</a></li>
                     </ul>
 
+                    <form class="search-form header-search d-flex me-lg-3 mb-2 mb-lg-0" method="get" action="{% url 'search_products' %}">
+                        <input
+                            class="search-input"
+                            type="search"
+                            name="q"
+                            placeholder="Search products"
+                            value="{{ request.GET.q|default:'' }}"
+                            aria-label="Search products"
+                        >
+                        <button class="btn btn-primary" type="submit" aria-label="Search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </form>
+
                     <div class="d-flex align-items-center gap-2">
                         <a id="miniCartBtn" class="btn btn-outline-primary position-relative" href="{% url 'cart' %}">
                             <i class="fa-solid fa-cart-shopping me-1"></i>Cart

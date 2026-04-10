@@ -50,6 +50,23 @@ def product_detail(request, product_id):
     return render(request, "product_detail.html", {"product": product})
 
 
+def search_products(request):
+    query = (request.GET.get('q') or '').strip()
+    products = Product.objects.none()
+
+    if query:
+        products = Product.objects.filter(
+            Q(name__icontains=query)
+            | Q(description__icontains=query)
+            | Q(category__name__icontains=query)
+        ).distinct()
+
+    return render(request, 'search_results.html', {
+        'query': query,
+        'products': products,
+    })
+
+
 # ------------------------
 # Authentication
 # ------------------------
