@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Cart, CartItem, Order, OrderItem, Review
+from .models import Category, Product, Cart, CartItem, Order, OrderItem, Review, UserProfile, SavedAddress, Wishlist
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -36,3 +36,28 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ['rating', 'created_at', 'product']
     search_fields = ['user__username', 'product__name', 'title', 'comment']
     readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'phone', 'city', 'created_at']
+    search_fields = ['user__username', 'phone', 'city']
+    readonly_fields = ['created_at', 'updated_at']
+
+
+@admin.register(SavedAddress)
+class SavedAddressAdmin(admin.ModelAdmin):
+    list_display = ['user', 'label', 'city', 'is_default', 'created_at']
+    list_filter = ['is_default', 'created_at']
+    search_fields = ['user__username', 'city', 'state']
+
+
+@admin.register(Wishlist)
+class WishlistAdmin(admin.ModelAdmin):
+    list_display = ['user', 'get_product_count', 'created_at']
+    search_fields = ['user__username']
+    readonly_fields = ['created_at']
+    
+    def get_product_count(self, obj):
+        return obj.products.count()
+    get_product_count.short_description = 'Products in Wishlist'

@@ -18,7 +18,22 @@ urlpatterns = [
     
     # Profile & Order History
     path('profile/', views.user_profile, name='user_profile'),
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
     path('order/<int:order_id>/', views.order_detail, name='order_detail'),
+    
+    # Addresses
+    path('addresses/', views.manage_addresses, name='manage_addresses'),
+    path('addresses/add/', views.add_address, name='add_address'),
+    path('addresses/<int:address_id>/edit/', views.edit_address, name='edit_address'),
+    path('addresses/<int:address_id>/delete/', views.delete_address, name='delete_address'),
+    
+    # Wishlist
+    path('wishlist/', views.my_wishlist, name='my_wishlist'),
+    path('wishlist/add/<int:product_id>/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('wishlist/remove/<int:product_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
+    
+    # My Reviews
+    path('reviews/', views.my_reviews, name='my_reviews'),
     
     # Reviews
     path('product/<int:product_id>/review/', views.add_review, name='add_review'),

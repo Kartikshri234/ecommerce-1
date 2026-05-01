@@ -3,22 +3,141 @@
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5 mb-5">
     <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <h1>My Profile</h1>
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-user-circle"></i> My Profile
+            </h1>
             <hr>
-            
-            <div class="card mb-4">
+        </div>
+    </div>
+
+    <!-- Profile Card with Statistics -->
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card shadow-sm text-center mb-3">
                 <div class="card-body">
-                    <h5 class="card-title">Account Information</h5>
-                    <p><strong>Username:</strong> {{ user.username }}</p>
-                    <p><strong>Email:</strong> {{ user.email }}</p>
-                    <p><strong>Joined:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+                    {% if user_profile.avatar %}
+                        <img src="{{ user_profile.avatar.url }}" alt="Avatar" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                        <div class="user-avatar mb-3" style="font-size: 2rem;">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                    {% endif %}
+                    <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                    <p class="text-muted">@{{ user.username }}</p>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
                 </div>
             </div>
+        </div>
 
-            <h3 class="mt-5">Order History</h3>
+        <!-- Statistics Cards -->
+        <div class="col-md-9">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-shopping-bag text-primary" style="font-size: 1.8rem;"></i>
+                            <h3 class="mt-2">{{ total_orders }}</h3>
+                            <p class="text-muted">Total Orders</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-rupiah-sign text-success" style="font-size: 1.8rem;"></i>
+                            <h3 class="mt-2">₹{{ total_spent|floatformat:0 }}</h3>
+                            <p class="text-muted">Total Spent</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-star text-warning" style="font-size: 1.8rem;"></i>
+                            <h3 class="mt-2">{{ total_reviews }}</h3>
+                            <p class="text-muted">Reviews Written</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-heart text-danger" style="font-size: 1.8rem;"></i>
+                            <h3 class="mt-2">{{ wishlist_count }}</h3>
+                            <p class="text-muted">Wishlist Items</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Information -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> Account Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Phone:</strong> {{ user_profile.phone|default:"Not provided" }}</p>
+                    <p><strong>Member Since:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+                    {% if user_profile.city %}
+                        <p><strong>City:</strong> {{ user_profile.city }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Saved Addresses</h5>
+                </div>
+                <div class="card-body">
+                    {% if saved_addresses %}
+                        <p><strong>{{ saved_addresses.count }} address(es) saved</strong></p>
+                        <a href="{% url 'manage_addresses' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-list"></i> Manage Addresses
+                        </a>
+                    {% else %}
+                        <p class="text-muted">No saved addresses yet</p>
+                    {% endif %}
+                    <a href="{% url 'add_address' %}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-plus"></i> Add Address
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-link"></i> Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'my_wishlist' %}" class="btn btn-sm btn-block btn-outline-danger mb-2" style="width: 100%; display: block; text-align: left; padding: 0.5rem;">
+                        <i class="fas fa-heart"></i> My Wishlist ({{ wishlist_count }})
+                    </a>
+                    <a href="{% url 'my_reviews' %}" class="btn btn-sm btn-block btn-outline-warning" style="width: 100%; display: block; text-align: left; padding: 0.5rem;">
+                        <i class="fas fa-star"></i> My Reviews ({{ total_reviews }})
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="mb-3"><i class="fas fa-history"></i> Recent Orders</h3>
             
             {% if orders %}
                 <div class="table-responsive">
@@ -61,6 +180,7 @@
                         </tbody>
                     </table>
                 </div>
+                <a href="{% url 'user_profile' %}" class="btn btn-outline-secondary">View All Orders</a>
             {% else %}
                 <div class="alert alert-info" role="alert">
                     📦 You haven't placed any orders yet. <a href="{% url 'product_list' %}">Start shopping</a>
@@ -68,11 +188,51 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- Recent Reviews -->
+    {% if reviews %}
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-3"><i class="fas fa-comment-dots"></i> Recent Reviews</h3>
+            
+            {% for review in reviews %}
+            <div class="card mb-3 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="card-title">{{ review.product.name }}</h6>
+                            <p class="mb-1"><strong>{{ review.title }}</strong></p>
+                            <p class="text-muted mb-2" style="font-size: 0.9rem;">
+                                {{ review.get_rating_display }}
+                                <span class="ms-2">{{ review.created_at|date:"M d, Y" }}</span>
+                            </p>
+                            <p class="card-text">{{ review.comment|truncatewords:30 }}</p>
+                        </div>
+                        <a href="{% url 'product_detail' review.product.id %}" class="btn btn-sm btn-outline-secondary">View</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            <a href="{% url 'my_reviews' %}" class="btn btn-outline-secondary">View All Reviews</a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <style>
     .table-hover tbody tr:hover {
         background-color: #f8f9fa;
+    }
+    .user-avatar {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: bold;
     }
 </style>
 {% endblock %}
