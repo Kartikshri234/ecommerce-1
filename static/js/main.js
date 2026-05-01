@@ -21,11 +21,13 @@
     }
 
     themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    themeToggle.setAttribute('title', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
     if (themeIcon) {
       themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun theme-icon' : 'fa-solid fa-moon theme-icon';
     }
     if (themeLabel) {
-      themeLabel.textContent = theme === 'dark' ? 'Light' : 'Dark';
+      themeLabel.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
     }
   }
 

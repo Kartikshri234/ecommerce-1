@@ -169,18 +169,44 @@ h6 { font-size: 1rem; }
 }
 
 .theme-toggle {
-  min-width: 108px;
+  position: relative;
+  width: 44px;
+  height: 44px;
   justify-content: center;
-  border-radius: 999px;
-  padding-inline: 1rem;
+  border-radius: 50%;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+
+.theme-toggle-circle {
+  aspect-ratio: 1;
 }
 
 .theme-toggle .theme-icon {
   width: 1rem;
+  font-size: 1rem;
 }
 
 .theme-toggle-label {
   font-weight: 600;
+}
+
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+}
+
+[data-theme="dark"] .theme-toggle {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.96));
+  color: var(--text-primary);
+  border-color: var(--border-dark);
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.98), rgba(30, 41, 59, 0.98));
 }
 
 .header-main {

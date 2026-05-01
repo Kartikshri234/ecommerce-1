@@ -57,9 +57,9 @@
                             <span id="cart-count" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ cart_count|default:0 }}</span>
                         </a>
 
-                        <button id="themeToggle" class="btn btn-outline-secondary theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
+                        <button id="themeToggle" class="btn btn-outline-secondary theme-toggle theme-toggle-circle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
                             <i class="fa-solid fa-moon theme-icon" data-theme-icon aria-hidden="true"></i>
-                            <span class="theme-toggle-label" data-theme-label>Dark</span>
+                            <span class="visually-hidden theme-toggle-label" data-theme-label>Dark mode</span>
                         </button>
 
                         {% if user.is_authenticated %}
