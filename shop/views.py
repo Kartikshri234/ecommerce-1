@@ -232,8 +232,12 @@ def checkout(request):
         # ✅ clear cart
         cart_items.delete()
 
-        messages.success(request, "Order placed successfully! 🎉")
-        return redirect("order_success", order_id=order.id)
+        # ✅ Redirect to Razorpay if payment method is Razorpay
+        if payment_method == 'razorpay':
+            return redirect('razorpay_checkout', order_id=order.id)
+        else:
+            messages.success(request, "Order placed successfully! 🎉")
+            return redirect("order_success", order_id=order.id)
 
     return render(request, "checkout.html", {
         "cart_items": cart_items,
@@ -250,15 +254,6 @@ def order_success(request, order_id):
 # ------------------------
 # User Profile & Order History
 # ------------------------
-
-@login_required
-def user_profile(request):
-    orders = Order.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'profile.html', {
-        'user': request.user,
-        'orders': orders,
-    })
-
 
 @login_required
 def order_detail(request, order_id):
