@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Reviews - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1>Reviews for {{ product.name }}</h1>
+            <hr>
+
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5>Average Rating</h5>
+                    <h2>
+                        {% if product.rating %}
+                            {{ product.rating|floatformat:1 }} ⭐
+                        {% else %}
+                            No ratings yet
+                        {% endif %}
+                    </h2>
+                    <p class="text-muted">Based on {{ reviews.count }} review{{ reviews.count|pluralize }}</p>
+                </div>
+            </div>
+
+            {% if reviews %}
+                <div>
+                    {% for review in reviews %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="card-title">{{ review.title }}</h5>
+                                    <p class="mb-2">
+                                        <strong>{{ review.user.username }}</strong>
+                                        <span class="text-muted ms-2">{{ review.created_at|date:"M d, Y" }}</span>
+                                    </p>
+                                    <p class="card-text">{{ review.get_rating_display }}</p>
+                                </div>
+                            </div>
+                            <p class="card-text">{{ review.comment }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    📝 No reviews yet. <a href="{% url 'add_review' product.id %}">Be the first to review!</a>
+                </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{% url 'product_detail' product.id %}" class="btn btn-secondary">Back to Product</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

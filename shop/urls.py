@@ -15,4 +15,16 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('checkout/', views.checkout, name='checkout'),
     path('order/success/<int:order_id>/', views.order_success, name='order_success'),
+    
+    # Profile & Order History
+    path('profile/', views.user_profile, name='user_profile'),
+    path('order/<int:order_id>/', views.order_detail, name='order_detail'),
+    
+    # Reviews
+    path('product/<int:product_id>/review/', views.add_review, name='add_review'),
+    path('product/<int:product_id>/reviews/', views.product_reviews, name='product_reviews'),
+    
+    # Razorpay Payment
+    path('razorpay/checkout/<int:order_id>/', views.razorpay_checkout, name='razorpay_checkout'),
+    path('razorpay/callback/', views.razorpay_callback, name='razorpay_callback'),
 ]

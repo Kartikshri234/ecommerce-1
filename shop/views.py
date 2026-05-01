@@ -4,10 +4,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, Avg
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
-from .models import Product, Cart, CartItem, Order, Category
-from .forms import RegisterForm
+from .models import Product, Cart, CartItem, Order, Category, Review
+from .forms import RegisterForm, ReviewForm
 
 
 # ------------------------
@@ -243,3 +245,137 @@ def checkout(request):
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     return render(request, "order_success.html", {"order": order})
+
+
+# ------------------------
+# User Profile & Order History
+# ------------------------
+
+@login_required
+def user_profile(request):
+    orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'profile.html', {
+        'user': request.user,
+        'orders': orders,
+    })
+
+
+@login_required
+def order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return render(request, 'order_detail.html', {'order': order})
+
+
+# ------------------------
+# Product Reviews
+# ------------------------
+
+@login_required
+def add_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    # Check if user already reviewed this product
+    existing_review = Review.objects.filter(product=product, user=request.user).first()
+    
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=existing_review)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.product = product
+            review.user = request.user
+            review.save()
+            
+            # Update product average rating
+            avg_rating = product.reviews.aggregate(
+                avg_rating=Avg('rating')
+            )['avg_rating']
+            product.rating = avg_rating
+            product.save()
+            
+            messages.success(request, "Review posted successfully! ⭐")
+            return redirect('product_detail', product_id=product.id)
+    else:
+        form = ReviewForm(instance=existing_review)
+    
+    return render(request, 'add_review.html', {
+        'form': form,
+        'product': product,
+        'existing_review': existing_review,
+    })
+
+
+def product_reviews(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    reviews = product.reviews.all()
+    return render(request, 'product_reviews.html', {
+        'product': product,
+        'reviews': reviews,
+    })
+
+
+# ------------------------
+# Razorpay Integration
+# ------------------------
+
+@login_required
+def razorpay_checkout(request, order_id):
+    """Initiate Razorpay payment for an order"""
+    import razorpay
+    
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    
+    if order.payment_method != 'razorpay':
+        messages.error(request, "Invalid payment method for this order")
+        return redirect('order_detail', order_id=order.id)
+    
+    # Initialize Razorpay client
+    client = razorpay.Client(
+        auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
+    )
+    
+    # Create payment order
+    razorpay_order = client.order.create(
+        amount=int(float(order.total_amount) * 100),  # Amount in paise
+        currency='INR',
+        receipt=f'order_{order.id}',
+    )
+    
+    context = {
+        'order': order,
+        'razorpay_order': razorpay_order,
+        'razorpay_key': settings.RAZORPAY_KEY_ID,
+    }
+    
+    return render(request, 'razorpay_payment.html', context)
+
+
+@login_required
+@csrf_exempt
+def razorpay_callback(request):
+    """Handle Razorpay payment callback"""
+    import razorpay
+    
+    if request.method == 'POST':
+        try:
+            payment_details = {
+                'razorpay_order_id': request.POST.get('razorpay_order_id'),
+                'razorpay_payment_id': request.POST.get('razorpay_payment_id'),
+                'razorpay_signature': request.POST.get('razorpay_signature'),
+            }
+            
+            # Verify payment signature
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            client.utility.verify_payment_signature(payment_details)
+            
+            # Update order status
+            order_id = request.POST.get('order_id')
+            order = Order.objects.get(id=order_id, user=request.user)
+            order.status = 'processing'
+            order.save()
+            
+            messages.success(request, "Payment successful! ✅")
+            return redirect('order_success', order_id=order.id)
+        
+        except Exception as e:
+            messages.error(request, f"Payment failed: {str(e)}")
+            return redirect('cart')

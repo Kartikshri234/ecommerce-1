@@ -64,6 +64,9 @@
 
                         {% if user.is_authenticated %}
                             <span class="text-muted small">Hi, {{ user.username }}</span>
+                            <a class="btn btn-outline-primary" href="{% url 'user_profile' %}">
+                                <i class="fa-solid fa-user me-1"></i> Profile
+                            </a>
                             <a class="btn btn-outline-secondary" href="{% url 'logout' %}">Logout</a>
                         {% else %}
                             <a class="btn btn-outline-secondary" href="{% url 'login' %}">Login</a>

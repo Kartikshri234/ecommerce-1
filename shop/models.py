@@ -54,11 +54,26 @@ class CartItem(models.Model):
         unique_together = ['cart', 'product']
 
 class Order(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    )
+    
+    PAYMENT_CHOICES = (
+        ('cod', 'Cash on Delivery'),
+        ('razorpay', 'Razorpay'),
+    )
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=50, default='cod')
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_CHOICES, default='cod')
     shipping_address = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"
@@ -75,3 +90,28 @@ class OrderItem(models.Model):
     
     def get_total(self):
         return self.quantity * self.price
+
+
+class Review(models.Model):
+    RATING_CHOICES = (
+        (1, '⭐'),
+        (2, '⭐⭐'),
+        (3, '⭐⭐⭐'),
+        (4, '⭐⭐⭐⭐'),
+        (5, '⭐⭐⭐⭐⭐'),
+    )
+    
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveIntegerField(choices=RATING_CHOICES)
+    title = models.CharField(max_length=200)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['product', 'user']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Review by {self.user.username} for {self.product.name}"
