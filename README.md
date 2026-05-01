@@ -8,6 +8,7 @@ A Django-based e-commerce project with product browsing, media-backed product im
 - Product images stored in `media/product_images`
 - Cart add/update/remove flow
 - Register, login, logout, and password reset routes
+- Light and dark mode with a saved theme preference
 - Checkout and order confirmation
 - Django admin for catalog and order management
 

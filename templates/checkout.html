@@ -11,7 +11,7 @@
         <!-- Order Summary -->
         <div class="col-lg-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">Order Summary</div>
+                <div class="card-header theme-card-header">Order Summary</div>
                 <div class="card-body">
                     {% for item in cart_items %}
                     <div class="d-flex justify-content-between border-bottom py-2">
@@ -33,7 +33,7 @@
         <!-- Checkout Form -->
         <div class="col-lg-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">Delivery & Payment</div>
+                <div class="card-header theme-card-header">Delivery & Payment</div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}

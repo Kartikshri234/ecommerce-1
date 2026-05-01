@@ -3,7 +3,7 @@
 {% block title %}ShopEase - Home{% endblock %}
 
 {% block content %}
-<section class="py-5 bg-light border-bottom">
+<section class="py-5 bg-surface border-bottom">
   <div class="container text-center">
     <h1 class="display-5 fw-bold">Welcome to ShopEase</h1>
     <p class="lead text-muted">Find top products across electronics, fashion, and more.</p>
@@ -22,7 +22,7 @@
       <div class="col-12 col-sm-6 col-lg-3">
         <a class="text-decoration-none" href="{% url 'product_detail' product.id %}">
           <div class="card h-100 shadow-sm border-0">
-            <div class="ratio ratio-4x3 bg-light">
+              <div class="ratio ratio-4x3 bg-surface">
               {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-100 h-100 object-fit-cover" loading="lazy">
               {% else %}
@@ -30,7 +30,7 @@
               {% endif %}
             </div>
             <div class="card-body">
-              <h5 class="card-title text-dark mb-2">{{ product.name }}</h5>
+              <h5 class="card-title mb-2">{{ product.name }}</h5>
               <p class="text-primary fw-bold mb-0">₹{{ product.price }}</p>
             </div>
           </div>

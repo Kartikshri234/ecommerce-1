@@ -1,7 +1,50 @@
 (function(){
-  // CSRF helper
-  // getCookie function is defined at the bottom of the file, so we use that implementation.
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop().split(';').shift();
+    }
+    return '';
+  }
+
   const CSRFTOKEN = getCookie('csrftoken');
+  const THEME_STORAGE_KEY = 'shopEaseTheme';
+
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = themeToggle ? themeToggle.querySelector('[data-theme-icon]') : null;
+  const themeLabel = themeToggle ? themeToggle.querySelector('[data-theme-label]') : null;
+
+  function updateThemeToggle(theme) {
+    if (!themeToggle) {
+      return;
+    }
+
+    themeToggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+    if (themeIcon) {
+      themeIcon.className = theme === 'dark' ? 'fa-solid fa-sun theme-icon' : 'fa-solid fa-moon theme-icon';
+    }
+    if (themeLabel) {
+      themeLabel.textContent = theme === 'dark' ? 'Light' : 'Dark';
+    }
+  }
+
+  function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    updateThemeToggle(theme);
+  }
+
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  setTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+  }
 
   // Toasts
   const wrap = document.getElementById('toastWrap');
@@ -143,6 +186,9 @@
 // Enhanced Preloader
 window.addEventListener('load', function() {
   const preloader = document.getElementById('preloader');
+  if (!preloader) {
+    return;
+  }
   setTimeout(() => {
     preloader.style.opacity = '0';
     setTimeout(() => {

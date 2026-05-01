@@ -5,8 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ShopEase{% endblock %}</title>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
@@ -14,7 +23,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <header class="site-header border-bottom bg-white sticky-top">
+    <header class="site-header border-bottom sticky-top">
         <nav class="navbar navbar-expand-lg navbar-light">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="{% url 'home' %}">ShopEase</a>
@@ -47,6 +56,11 @@
                             <i class="fa-solid fa-cart-shopping me-1"></i>Cart
                             <span id="cart-count" class="badge bg-danger position-absolute top-0 start-100 translate-middle">{{ cart_count|default:0 }}</span>
                         </a>
+
+                        <button id="themeToggle" class="btn btn-outline-secondary theme-toggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">
+                            <i class="fa-solid fa-moon theme-icon" data-theme-icon aria-hidden="true"></i>
+                            <span class="theme-toggle-label" data-theme-label>Dark</span>
+                        </button>
 
                         {% if user.is_authenticated %}
                             <span class="text-muted small">Hi, {{ user.username }}</span>
