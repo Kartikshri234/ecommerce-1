@@ -1,13 +1,14 @@
-(function(){
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(';').shift();
-    }
-    return '';
+// Make getCookie globally accessible
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop().split(';').shift();
   }
+  return '';
+}
 
+(function(){
   const CSRFTOKEN = getCookie('csrftoken');
   const THEME_STORAGE_KEY = 'shopEaseTheme';
 
@@ -185,18 +186,18 @@
     apply();
   }
 })();
+
 // Enhanced Preloader
 window.addEventListener('load', function() {
   const preloader = document.getElementById('preloader');
-  if (!preloader) {
-    return;
-  }
-  setTimeout(() => {
-    preloader.style.opacity = '0';
+  if (preloader) {
     setTimeout(() => {
-      preloader.style.display = 'none';
-    }, 300);
-  }, 500);
+      preloader.style.opacity = '0';
+      setTimeout(() => {
+        preloader.style.display = 'none';
+      }, 300);
+    }, 500);
+  }
 });
 
 // Enhanced Smooth Scrolling
@@ -214,87 +215,21 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Product Image Lazy Loading
-const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-const imageObserver = new IntersectionObserver((entries, observer) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const img = entry.target;
-      if (img.dataset.src) {
-        img.src = img.dataset.src;
-      }
-      img.classList.remove('lazy');
-      imageObserver.unobserve(img);
-    }
-  });
-});
-
-lazyImages.forEach(img => imageObserver.observe(img));
-
-// Add to Cart Animation
-function animateAddToCart(button, productName) {
-  const originalText = button.innerHTML;
-  button.innerHTML = '<div class="loading-spinner"></div>';
-  button.disabled = true;
-  
-  setTimeout(() => {
-    button.innerHTML = '<i class="fas fa-check"></i> Added!';
-    setTimeout(() => {
-      button.innerHTML = originalText;
-      button.disabled = false;
-    }, 2000);
-  }, 1000);
-  
-  // Update cart count with animation
-  const cartCount = document.querySelector('#miniCartBtn .badge');
-  if (cartCount) {
-    const currentCount = parseInt(cartCount.textContent) || 0;
-    cartCount.textContent = currentCount + 1;
-    cartCount.style.transform = 'scale(1.2)';
-    setTimeout(() => {
-      cartCount.style.transform = 'scale(1)';
-    }, 300);
-  }
-}
-
-// Initialize all interactive elements
-document.addEventListener('DOMContentLoaded', function() {
-  // Add to cart buttons
-  document.querySelectorAll('[data-add-to-cart]').forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      const productName = this.getAttribute('data-name');
-      animateAddToCart(this, productName);
-      fetch(this.getAttribute('data-url'), {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': getCookie('csrftoken'),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'quantity=1'
-      }).then(response => {
-        if (response.ok) {
-          toast(`✅ Added <b>${productName}</b> to cart`);
-          return response.json();
+if ('IntersectionObserver' in window) {
+  const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+  if (lazyImages.length > 0) {
+    const imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          if (img.dataset.src) {
+            img.src = img.dataset.src;
+          }
+          img.classList.remove('lazy');
+          imageObserver.unobserve(img);
         }
-        throw new Error('Failed to add item to cart');
-      }).then(data => {
-        // Success handling if needed
-      }).catch(error => {
-        toast('⚠️ Failed to add item to cart');
       });
     });
-  });
-
-  // Wishlist button handlers
-  document.querySelectorAll('.btn-wishlist').forEach(button => {
-    button.addEventListener('click', function() {
-      const message = this.classList.contains('active') ? 
-        'Added to wishlist' : 'Removed from wishlist';
-      this.classList.toggle('active');
-      this.innerHTML = this.classList.contains('active') ? 
-        '<i class="fas fa-heart"></i>' : 
-        '<i class="far fa-heart"></i>';
-      toast(message);
-    });
-  });
-});
+    lazyImages.forEach(img => imageObserver.observe(img));
+  }
+}

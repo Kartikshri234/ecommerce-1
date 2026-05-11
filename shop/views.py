@@ -114,41 +114,60 @@ def logout_view(request):
 @login_required
 def add_to_cart(request, product_id):
     if request.method == 'POST':
-        product = get_object_or_404(Product, id=product_id)
+        try:
+            product = get_object_or_404(Product, id=product_id)
 
-        if product.stock <= 0:
+            if product.stock <= 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Product is out of stock ❌'
+                }, status=400)
+
+            # Get quantity from request
+            quantity = request.POST.get('quantity', 1)
+            try:
+                quantity = int(quantity)
+                if quantity < 1:
+                    quantity = 1
+                elif quantity > product.stock:
+                    quantity = product.stock
+            except (ValueError, TypeError):
+                quantity = 1
+
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            cart_item, created = CartItem.objects.get_or_create(
+                cart=cart,
+                product=product,
+                defaults={"quantity": quantity},
+            )
+
+            if not created:
+                new_quantity = cart_item.quantity + quantity
+                if new_quantity > product.stock:
+                    new_quantity = product.stock
+                    message = f"Stock limit reached for {product.name}"
+                else:
+                    message = f"Increased {product.name} quantity in cart!"
+                cart_item.quantity = new_quantity
+                cart_item.save()
+            else:
+                message = f"{product.name} added to cart!"
+
+            return JsonResponse({
+                'success': True,
+                'cart_count': cart.get_total_items(),
+                'message': message
+            })
+        except Exception as e:
             return JsonResponse({
                 'success': False,
-                'message': 'Product is out of stock ❌'
-            })
-
-        cart, created = Cart.objects.get_or_create(user=request.user)
-        cart_item, created = CartItem.objects.get_or_create(
-            cart=cart,
-            product=product,
-            defaults={"quantity": 1},
-        )
-
-        if not created:
-            if cart_item.quantity < product.stock:
-                cart_item.quantity += 1
-                cart_item.save()
-                message = f"Increased {product.name} quantity in cart!"
-            else:
-                message = f"Stock limit reached for {product.name}"
-        else:
-            message = f"{product.name} added to cart!"
-
-        return JsonResponse({
-            'success': True,
-            'cart_count': cart.get_total_items(),
-            'message': message
-        })
+                'message': f'Error adding to cart: {str(e)}'
+            }, status=500)
     
     return JsonResponse({
         'success': False,
         'message': 'Invalid request'
-    })
+    }, status=400)
 
 @login_required
 def cart_view(request):
@@ -204,11 +223,27 @@ def checkout(request):
     total = sum(item.get_total() for item in cart_items)
 
     if request.method == "POST":
-        payment_method = request.POST.get("payment_method")
-        full_name = request.POST.get("full_name")
-        phone = request.POST.get("phone")
-        address = request.POST.get("address_line1")
-        city = request.POST.get("city")
+        payment_method = request.POST.get("payment_method", "").strip()
+        full_name = request.POST.get("full_name", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        address = request.POST.get("address_line1", "").strip()
+        city = request.POST.get("city", "").strip()
+        
+        # Validate required fields
+        if not all([payment_method, full_name, phone, address, city]):
+            messages.error(request, "Please fill in all required fields.")
+            return render(request, "checkout.html", {
+                "cart_items": cart_items,
+                "total": total,
+            })
+        
+        # Validate payment method
+        if payment_method not in ['cod', 'razorpay']:
+            messages.error(request, "Invalid payment method selected.")
+            return render(request, "checkout.html", {
+                "cart_items": cart_items,
+                "total": total,
+            })
 
         # ✅ create order using total_amount field
         order = Order.objects.create(
@@ -349,14 +384,23 @@ def razorpay_checkout(request, order_id):
 def razorpay_callback(request):
     """Handle Razorpay payment callback"""
     import razorpay
+    import logging
+    
+    logger = logging.getLogger(__name__)
     
     if request.method == 'POST':
         try:
             payment_details = {
-                'razorpay_order_id': request.POST.get('razorpay_order_id'),
-                'razorpay_payment_id': request.POST.get('razorpay_payment_id'),
-                'razorpay_signature': request.POST.get('razorpay_signature'),
+                'razorpay_order_id': request.POST.get('razorpay_order_id', ''),
+                'razorpay_payment_id': request.POST.get('razorpay_payment_id', ''),
+                'razorpay_signature': request.POST.get('razorpay_signature', ''),
             }
+            
+            # Validate required fields
+            if not all(payment_details.values()):
+                logger.error(f"Missing payment details for user {request.user.id}")
+                messages.error(request, "Invalid payment response from Razorpay")
+                return redirect('cart')
             
             # Verify payment signature
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -364,15 +408,31 @@ def razorpay_callback(request):
             
             # Update order status
             order_id = request.POST.get('order_id')
-            order = Order.objects.get(id=order_id, user=request.user)
+            if not order_id:
+                logger.error("Order ID missing from payment callback")
+                messages.error(request, "Order ID not found in payment response")
+                return redirect('cart')
+            
+            try:
+                order = Order.objects.get(id=order_id, user=request.user)
+            except Order.DoesNotExist:
+                logger.error(f"Order {order_id} not found for user {request.user.id}")
+                messages.error(request, "Order not found")
+                return redirect('cart')
+            
             order.status = 'processing'
             order.save()
             
             messages.success(request, "Payment successful! ✅")
             return redirect('order_success', order_id=order.id)
         
+        except razorpay.BadRequestsError as e:
+            logger.error(f"Razorpay error for user {request.user.id}: {str(e)}")
+            messages.error(request, f"Payment verification failed: Invalid signature")
+            return redirect('cart')
         except Exception as e:
-            messages.error(request, f"Payment failed: {str(e)}")
+            logger.error(f"Unexpected error in razorpay_callback for user {request.user.id}: {str(e)}")
+            messages.error(request, f"Payment failed: An unexpected error occurred")
             return redirect('cart')
 
 
